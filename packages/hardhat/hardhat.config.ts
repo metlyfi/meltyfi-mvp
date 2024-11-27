@@ -9,7 +9,6 @@ import "solidity-coverage";
 import "@nomicfoundation/hardhat-verify";
 import "hardhat-deploy";
 import "hardhat-deploy-ethers";
-import { ethers } from "hardhat";
 
 // If not set, it uses ours Alchemy's default API key.
 // You can get your own at https://dashboard.alchemyapi.io
@@ -49,7 +48,7 @@ const config: HardhatUserConfig = {
       accounts: [
         {
           privateKey: deployerPrivateKey, // Replace with the private key of your custom address
-          balance: ethers.parseEther("10000").toString(), // You can set the balance of the account in wei
+          balance: "1000000000000000000000", // You can set the balance of the account in wei
         },
         // You can add more accounts here if needed
       ],
