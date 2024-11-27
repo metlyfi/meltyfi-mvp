@@ -36,7 +36,7 @@ const deployContracts: DeployFunction = async function (hre: HardhatRuntimeEnvir
     autoMine: true,
   });
 
-  const contractTestCollection = await deploy("TestCollection", {
+  await deploy("TestCollection", {
     from: deployer,
     args: [deployer],
     log: true,
@@ -71,13 +71,13 @@ const deployContracts: DeployFunction = async function (hre: HardhatRuntimeEnvir
     autoMine: true,
   });
 
-  let contract1 = await hre.ethers.getContract<Contract>("ChocoChip", deployer);
+  const contract1 = await hre.ethers.getContract<Contract>("ChocoChip", deployer);
   await contract1.transferOwnership(contractMeltyFiNFT.address);
 
-  let contract2 = await hre.ethers.getContract<Contract>("LogoCollection", deployer);
+  const contract2 = await hre.ethers.getContract<Contract>("LogoCollection", deployer);
   await contract2.transferOwnership(contractMeltyFiNFT.address);
 
-  let contract3 = await hre.ethers.getContract<Contract>("VRFv2DirectFundingConsumer", deployer);
+  const contract3 = await hre.ethers.getContract<Contract>("VRFv2DirectFundingConsumer", deployer);
   await contract3.transferOwnership(contractMeltyFiNFT.address);
 
 };
