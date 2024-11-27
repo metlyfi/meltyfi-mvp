@@ -57,16 +57,10 @@ const deployContracts: DeployFunction = async function (hre: HardhatRuntimeEnvir
     autoMine: true,
   });
 
-  const contractVRFv2DirectFundingConsumer = await deploy("VRFv2DirectFundingConsumer", {
-    from: deployer,
-    args: [],
-    log: true,
-    autoMine: true,
-  });
 
   const contractMeltyFiNFT = await deploy("MeltyFiNFT", {
     from: deployer,
-    args: [contractChocoChip.address, contractLogoCollection.address, contractMeltyFiDAO.address, contractVRFv2DirectFundingConsumer.address],
+    args: [contractChocoChip.address, contractLogoCollection.address, contractMeltyFiDAO.address],
     log: true,
     autoMine: true,
   });
@@ -76,9 +70,6 @@ const deployContracts: DeployFunction = async function (hre: HardhatRuntimeEnvir
 
   const contract2 = await hre.ethers.getContract<Contract>("LogoCollection", deployer);
   await contract2.transferOwnership(contractMeltyFiNFT.address);
-
-  const contract3 = await hre.ethers.getContract<Contract>("VRFv2DirectFundingConsumer", deployer);
-  await contract3.transferOwnership(contractMeltyFiNFT.address);
 
 };
 

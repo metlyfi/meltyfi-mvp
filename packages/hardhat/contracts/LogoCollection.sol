@@ -9,10 +9,10 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 contract LogoCollection is ERC1155, ERC1155Burnable, Ownable, ERC1155Supply {
     string private constant BASE_URI = "https://ipfs.io/ipfs/QmW7sq2pgiNMry7Syp3DEHSScSFKsfwVsGbQk394iuUQzF";
 
-    constructor() 
+    constructor(address initialOwner) 
         ERC1155(BASE_URI) 
         ERC1155Burnable() 
-        Ownable(msg.sender) 
+        Ownable(initialOwner) 
         ERC1155Supply() 
     {}
 

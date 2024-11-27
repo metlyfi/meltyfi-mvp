@@ -8,12 +8,6 @@ import "./ChocoChip.sol";
 import "./LogoCollection.sol";
 /// MeltyFiDAO.sol is the governance contract of the MeltyFi protocol
 import "./MeltyFiDAO.sol";
-/// VRFv2DirectFundingConsumer.sol is a contract that generates random number
-import "./VRFv2DirectFundingConsumer.sol";
-/// AutomationBase.sol is a contract that provides basic functionality for integration with Chainlink, a platform for creating connections between smart contracts and external services
-import "./chainlink/contracts/src/v0.8/automation/AutomationBase.sol";
-/// AutomationCompatibleInterface.sol is an interface that defines the required methods for being compatible with the Chainlink platform and using its automation functionality
-import "./chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 ///Ownable.sol is a contract that provides a basic access control mechanism
 import "@openzeppelin/contracts/access/Ownable.sol";
 /// ERC1155Supply.sol is a contract that extends the ERC1155 contract and provides functionality for managing the supply of ERC1155 tokens
@@ -42,7 +36,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
  *         the contract refunds WonkaBars holders with Ether of the lottery owners. Plus every
  *         wonkabar holder is rewarded with ChocoCips.
  */
-contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, AutomationCompatibleInterface {
+contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply {
 
     /// Data type representing the possible states of a lottery
     enum lotteryState {
@@ -89,8 +83,6 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
     LogoCollection internal immutable _contractLogoCollection;
     /// Instance of the MeltyFiDAO contract
     MeltyFiDAO internal immutable _contractMeltyFiDAO;
-    /// Instance of the VRFv2DirectFundingConsumer contract
-    VRFv2DirectFundingConsumer internal immutable _contractVRFv2DirectFundingConsumer;
 
     /// Amount of ChocoChips per Ether
     uint256 internal immutable _amountChocoChipPerEther;
@@ -133,7 +125,6 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
      * @dev Raises error if the address of `contractChocoChip` is not equal to the token address of `contractMeltyFiDAO`.
      *      Raises error if the owner of `contractChocoChip` is not the current message sender.
      *      Raises error if the owner of `contractLogoCollection` is not the current message sender.
-     *      Raises error if the owner of `contractVRFv2Consumer` is not the current message sender.
      *
      * @param contractChocoChip instance of the ChocoChip contract.
      * @param contractLogoCollection instance of the LogoCollection contract.
@@ -142,8 +133,7 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
     constructor(
         ChocoChip contractChocoChip,
         LogoCollection contractLogoCollection,
-        MeltyFiDAO contractMeltyFiDAO,
-        VRFv2DirectFundingConsumer contractVRFv2DirectFundingConsumer
+        MeltyFiDAO contractMeltyFiDAO
     ) ERC1155("https://ipfs.io/ipfs/QmTiQsRBGcKyyipnRGVTu8dPfykM89QHn81KHX488cTtxa") Ownable(_msgSender())
     {
         /// The ChocoChip contract and the MeltyFiDAO token must be the same contract
@@ -161,16 +151,10 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
             contractLogoCollection.owner() == _msgSender(),
             "MeltyFiNFT: the owner of contractLogoCollection is not the current message sender"
         );
-        /// The caller must be the owner of the VRFv2DirectFundingConsumer contract.
-        require(
-            contractVRFv2DirectFundingConsumer.owner() == _msgSender(), 
-            "MeltyFiNFT: the owner of contractVRFv2DirectFundingConsumer is not the current message sender"
-        );
         /// Initializing the immutable variables
         _contractChocoChip = contractChocoChip;
         _contractLogoCollection = contractLogoCollection;
         _contractMeltyFiDAO = contractMeltyFiDAO;
-        _contractVRFv2DirectFundingConsumer = contractVRFv2DirectFundingConsumer;
         _amountChocoChipPerEther = 1000;
         _royaltyDAOPercentage = 5;
         _upperLimitBalanceOfPercentage = 25;
@@ -274,17 +258,6 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
     }
 
     /**
-     * @dev An internal function that returns the address of the VRFv2DirectFundingConsumer contract.
-     *
-     * @return The address of the VRFv2DirectFundingConsumer contract.
-     */
-    function _addressVRFv2DirectFundingConsumer() internal view returns (address) 
-    {
-        /// return the address of the VRFv2DirectFundingConsumer contract
-        return address(_contractVRFv2DirectFundingConsumer);
-    }
-
-    /**
      * @dev An internal function that calculates the amount to refund to a given address for a given lottery.
      *      This function is called only if the lottery is cancelled. 
      *
@@ -379,17 +352,7 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
         return _addressMeltyFiDAO();
     }
 
-    /**
-     * @notice Returns the address of the VRFv2DirectFundingConsumer contract.
-     *
-     * @return The address of the VRFv2DirectFundingConsumer contract.
-     */
-    function addressVRFv2DirectFundingConsumer() external view returns (address) 
-    {
-        /// call the internal function to return the address of the VRFv2DirectFundingConsumer contract
-        return _addressVRFv2DirectFundingConsumer();
-    }
-
+    
     /**
      * @notice Returns the amount to refund to a given address for a given lottery.
      *
@@ -772,14 +735,7 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
             /// set lottery winner
             EnumerableSet.AddressSet storage wonkaBarHolders = _lotteryIdToWonkaBarHolders[lotteryId];
             uint256 numberOfWonkaBarHolders = wonkaBarHolders.length();
-            uint256 requestId = _contractVRFv2DirectFundingConsumer.requestRandomWords();
-            (uint256 paid, bool fulfilled, uint256[] memory randomWords) = _contractVRFv2DirectFundingConsumer.getRequestStatus(requestId);
-            /// The VRF request for random words must be fulfilled
-            require(
-                fulfilled, 
-                "MeltyFi: The VRF request for random words is not fulfilled"
-            );
-            uint256 winnerIndex = (randomWords[0]%numberOfWonkaBars)+1;
+            uint256 winnerIndex = 0;
             uint256 totalizer = 0; 
             address winner;
             for (uint256 i=0; i<numberOfWonkaBarHolders; i++) {
@@ -865,54 +821,5 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
         if (totalSupply(lotteryId) == 0) {
             _lotteryIdToLottery[lotteryId].state = lotteryState.TRASHED;
         }
-    }
-
-    /**
-     * @notice Checks if any active lotteries need to be concluded.
-     *
-     * @dev This function is designed to be called by an external contract using
-     *      the `call` function. It is expected to be called periodically to check
-     *      if any active lotteries need to be concluded (e.g. because the expiration
-     *      date has passed).
-     *
-     * @param checkData Unused input data.
-     *
-     * @return upkeepNeeded Whether any lotteries need to be concluded.
-     * @return performData The ID of the lottery to be concluded, if any.
-     */
-    function checkUpkeep(
-        bytes calldata checkData
-    ) external view cannotExecute returns (bool upkeepNeeded, bytes memory performData) 
-    {
-        uint256 numberOfActiveLottery = _activeLotteryIds.length();
-        /// iterates through the set of active lotteries and checks the expiration date of each one
-        for (uint256 i=0; i<numberOfActiveLottery; i++) {
-            uint256 lotteryId = _activeLotteryIds.at(i);
-            /// If it finds a lottery that has expired, it returns `true` and the ID of the lottery in `performData`
-            if (_lotteryIdToLottery[lotteryId].expirationDate <= block.timestamp) {
-                return (true, abi.encode(lotteryId));
-            }
-        }
-        /// If it does not find any expired lotteries, it returns `false` and an empty string in `performData`
-        return (false, "");
-    }
-
-    /**
-     * @notice Concludes an active lottery.
-     *
-     * @dev This function is intended to be called by an external contract in response to the `checkUpkeep`
-     *      function returning `true`. It decodes the `performData` input to retrieve the ID of the lottery
-     *      to be concluded and calls the `drawWinner` function to draw the winner and update the state of the
-     *      lottery.
-     *
-     * @param performData The ID of the lottery to be concluded.
-     */
-    function performUpkeep(
-        bytes calldata performData
-    ) external
-    {
-        uint256 lotteryId = abi.decode(performData, (uint256));
-        /// call the drawWinner function to draw the winner and update the state of the lottery
-        drawWinner(lotteryId);
     }
 }
