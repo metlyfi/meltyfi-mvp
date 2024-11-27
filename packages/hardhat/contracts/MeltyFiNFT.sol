@@ -11,9 +11,9 @@ import "./MeltyFiDAO.sol";
 /// VRFv2DirectFundingConsumer.sol is a contract that generates random number
 import "./VRFv2DirectFundingConsumer.sol";
 /// AutomationBase.sol is a contract that provides basic functionality for integration with Chainlink, a platform for creating connections between smart contracts and external services
-import "@chainlink/contracts/src/v0.8/automation/AutomationBase.sol";
+import "./chainlink/contracts/src/v0.8/automation/AutomationBase.sol";
 /// AutomationCompatibleInterface.sol is an interface that defines the required methods for being compatible with the Chainlink platform and using its automation functionality
-import "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
+import "./chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 ///Ownable.sol is a contract that provides a basic access control mechanism
 import "@openzeppelin/contracts/access/Ownable.sol";
 /// ERC1155Supply.sol is a contract that extends the ERC1155 contract and provides functionality for managing the supply of ERC1155 tokens
