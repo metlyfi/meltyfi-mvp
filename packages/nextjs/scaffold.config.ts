@@ -10,7 +10,6 @@ export type ScaffoldConfig = {
 
 const chain = process.env.NETWORK_NAME ? chains?.[process.env.NETWORK_NAME as keyof typeof chains] : chains.hardhat;
 
-
 const scaffoldConfig = {
   // The networks on which your DApp is live
   targetNetworks: [chain],
