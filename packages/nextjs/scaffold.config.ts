@@ -1,4 +1,3 @@
-import { defineChain } from "viem";
 import * as chains from "viem/chains";
 
 export type ScaffoldConfig = {
@@ -10,28 +9,17 @@ export type ScaffoldConfig = {
 };
 
 // const chain = process.env.NETWORK_NAME ? chains?.[process.env.NETWORK_NAME as keyof typeof chains] : chains.hardhat;
-const getChain = () => {
-  const networkName = process?.env?. NETWORK_NAME;
 
-  const chain = defineChain({
-    id: 31,
-    name: "RootstockTestnet",
-    nativeCurrency: {
-      decimals: 18,
-      name: "rBTC",
-      symbol: "rBTC",
-    },
-    rpcUrls: {
-      default: { http: ['https://public-node.testnet.rsk.co'] },
-    },
-  });
-    if (networkName === "rootstockTestnet") return chain;
-    return chains.hardhat;
-  };
+  // chains.hardhat
+  // chains.rootstockTestnet
+  const chain = chains.rootstockTestnet // chains[process.env.NETWORK_NAME as keyof typeof chains]  || chains.hardhat;
+  // console.log("chain", chain);
 
+  // const chain = chains.rootstockTestnet;
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [getChain()],
+  // targetNetworks: process.env.NETWORK_NAME === 'rootstockTestnet' ? [chains.rootstockTestnet] : [chains.hardhat],
+  targetNetworks: [chain],
 
   // The interval at which your front-end polls the RPC servers for new data
   // it has no effect if you only target the local network (default is 4000)
