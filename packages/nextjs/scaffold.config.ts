@@ -9,10 +9,19 @@ export type ScaffoldConfig = {
 };
 
 // const chain = process.env.NETWORK_NAME ? chains?.[process.env.NETWORK_NAME as keyof typeof chains] : chains.hardhat;
+const getChain = () => {
+  const networkName = process.env.NEXT_PUBLIC_NETWORK_NAME;
+  
+  if (networkName && networkName in chains) {
+    return chains[networkName as keyof typeof chains];
+  }
+  
+  return chains.hardhat;
+};
 
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [chains.hardhat],
+  targetNetworks: [getChain()],
 
   // The interval at which your front-end polls the RPC servers for new data
   // it has no effect if you only target the local network (default is 4000)
