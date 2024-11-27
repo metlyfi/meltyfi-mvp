@@ -3,16 +3,16 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
 
 /**
- * Deploys a contract named "YourContract" using the deployer account and
+ * Deploys a contracts using the deployer account and
  * constructor arguments set to the deployer address
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
-const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployContracts: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   /*
     On localhost, the deployer account is the one that comes with Hardhat, which is already funded.
 
-    When deploying to live networks (e.g `yarn deploy --network sepolia`), the deployer account
+    When deploying to live networks (e.g `yarn deploy --network goerli`), the deployer account
     should have sufficient balance to pay for the gas fees for contract creation.
 
     You can generate a random account with `yarn generate` which will fill DEPLOYER_PRIVATE_KEY
@@ -22,23 +22,68 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("YourContract", {
+  const contractChocoChip = await deploy("ChocoChip", {
     from: deployer,
-    // Contract constructor arguments
     args: [deployer],
     log: true,
-    // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
-    // automatically mining the contract deployment transaction. There is no effect on live networks.
     autoMine: true,
   });
 
-  // Get the deployed contract to interact with it after deploying.
-  const yourContract = await hre.ethers.getContract<Contract>("YourContract", deployer);
-  console.log("👋 Initial greeting:", await yourContract.greeting());
+  const contractLogoCollection = await deploy("LogoCollection", {
+    from: deployer,
+    args: [deployer],
+    log: true,
+    autoMine: true,
+  });
+
+  await deploy("TestCollection", {
+    from: deployer,
+    args: [deployer],
+    log: true,
+    autoMine: true,
+  });
+
+  const contractTimelockController = await deploy("TimelockController", {
+    from: deployer,
+    args: [3600, [], [], deployer],
+    log: true,
+    autoMine: true,
+  });
+
+  const contractMeltyFiDAO = await deploy("MeltyFiDAO", {
+    from: deployer,
+    args: [contractChocoChip.address, contractTimelockController.address],
+    log: true,
+    autoMine: true,
+  });
+
+  const contractVRFv2DirectFundingConsumer = await deploy("VRFv2DirectFundingConsumer", {
+    from: deployer,
+    args: [],
+    log: true,
+    autoMine: true,
+  });
+
+  const contractMeltyFiNFT = await deploy("MeltyFiNFT", {
+    from: deployer,
+    args: [contractChocoChip.address, contractLogoCollection.address, contractMeltyFiDAO.address, contractVRFv2DirectFundingConsumer.address],
+    log: true,
+    autoMine: true,
+  });
+
+  const contract1 = await hre.ethers.getContract<Contract>("ChocoChip", deployer);
+  await contract1.transferOwnership(contractMeltyFiNFT.address);
+
+  const contract2 = await hre.ethers.getContract<Contract>("LogoCollection", deployer);
+  await contract2.transferOwnership(contractMeltyFiNFT.address);
+
+  const contract3 = await hre.ethers.getContract<Contract>("VRFv2DirectFundingConsumer", deployer);
+  await contract3.transferOwnership(contractMeltyFiNFT.address);
+
 };
 
-export default deployYourContract;
+export default deployContracts;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
-// e.g. yarn deploy --tags YourContract
-deployYourContract.tags = ["YourContract"];
+// e.g. yarn deploy --tags all
+deployContracts.tags = ["all"];
