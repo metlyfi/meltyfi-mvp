@@ -8,12 +8,12 @@ export type ScaffoldConfig = {
   onlyLocalBurnerWallet: boolean;
 };
 
-const chain = process.env.NETWORK_NAME ? chains?.[process.env.NETWORK_NAME as keyof typeof chains] : chains.hardhat;
+// const chain = process.env.NETWORK_NAME ? chains?.[process.env.NETWORK_NAME as keyof typeof chains] : chains.hardhat;
 
 
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [chain],
+  targetNetworks: [chains.hardhat],
 
   // The interval at which your front-end polls the RPC servers for new data
   // it has no effect if you only target the local network (default is 4000)
