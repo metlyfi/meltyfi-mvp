@@ -44,3 +44,7 @@ p {
 .btn-green {
   @apply rounded-full p-2 px-5 text-white bg-secondary border border-4 border-accent hover:bg-accent hover:border-secondary;
 }
+
+.btn-choco{
+  @apply rounded-full p-2 px-5 text-white bg-[#1F130F] border border-4 border-accent hover:bg-accent hover:border-secondary;
+}
