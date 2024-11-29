@@ -4,7 +4,6 @@ import type { NextPage } from "next";
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import AddLottery from "~~/components/AddLottery";
-import CustomCard from "~~/components/Card";
 import CardLottery from "~~/components/CardLottery";
 import Loading from "~~/components/Loading";
 import ModalContentBox from "~~/components/ModalContentBox";
