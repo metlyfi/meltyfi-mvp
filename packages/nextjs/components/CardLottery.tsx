@@ -3,7 +3,7 @@
 import React, { ReactNode } from 'react';
 import CustomCard from './Card';
 import Image from 'next/image';
-import { useScaffoldReadContract, useScaffoldWriteContract } from '~~/hooks/scaffold-eth';
+import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from '~~/hooks/scaffold-eth';
 import Loading from './Loading';
 import { bigintToDate } from '~~/utils/utils';
 import { Address } from './scaffold-eth';
@@ -17,7 +17,11 @@ interface CardLotteryProps {
 const CardLottery: React.FC<CardLotteryProps> = ({ lotteryId }) => {
   const { address: connectedAddress } = useAccount();
 
-  const { writeContractAsync, isPending } = useScaffoldWriteContract("MeltyFiNFT");
+  const contractName = "MeltyFiNFT";
+  const { data: deployedContractData } = useDeployedContractInfo(contractName);
+  console.log('->DeployedContractData', deployedContractData);
+  
+  const { writeContractAsync, isPending } = useScaffoldWriteContract(contractName);
 
   const { data: lottery, isLoading: isLotteryLoading } = useScaffoldReadContract({
     contractName: "MeltyFiNFT",
