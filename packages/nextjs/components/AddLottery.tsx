@@ -1,13 +1,51 @@
 // AddLottery.tsx
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, use, useEffect, useState } from 'react';
 import CustomCard from './Card';
 import { AddressInput, EtherInput, InputBase, IntegerInput } from './scaffold-eth';
-import { useScaffoldWriteContract } from '~~/hooks/scaffold-eth';
+import { useDeployedContractInfo, useScaffoldWriteContract } from '~~/hooks/scaffold-eth';
 import { notification } from '~~/utils/scaffold-eth';
 // import { useAccount, useWriteContract } from 'wagmi';
 
-const AddLottery: React.FC<any> = ({  }) => {
-  const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("MeltyFiNFT");
+const SendTx: React.FC<any> = ({
+  priceContractAddress, priceTokenId, wonkaBarPrice, wonkaBarsMaxSuply, duration, loadingSubmit, setLoadingSubmit, setShow
+}) => {
+  const contractName = "MeltyFiNFT";
+  const { data: deployedContractData } = useDeployedContractInfo(contractName);
+  const { writeContractAsync, isPending } = useScaffoldWriteContract(contractName);
+  console.log('->DeployedContractData', deployedContractData);
+  
+    const date = new Date(duration);
+    const timestamp = date.getTime() / 1000; 
+
+    const makeTx = async () => {
+      console.log('->Make Tx', {isPending})
+      
+      try {
+        await writeContractAsync({
+          functionName: "createLottery",
+          args: [BigInt(timestamp), priceContractAddress, BigInt(priceTokenId), BigInt(wonkaBarPrice),BigInt(wonkaBarsMaxSuply)],
+        });
+      } catch (error) {
+        console.log('->Error', error);
+      }
+    }
+
+    useEffect(() => {
+      if(deployedContractData) makeTx()
+    }, [deployedContractData])
+
+    useEffect(() => {
+      if(isPending) return
+      setLoadingSubmit(false)
+      setShow(false)
+    }, [isPending])
+    
+
+  return (<></>)
+}
+
+const AddLottery: React.FC<any> = ({ setShow }) => {
+  const { writeContractAsync, isPending } = useScaffoldWriteContract("MeltyFiNFT");
 
   const [duration, setDuration] = useState('')
   const [priceContractAddress, setPriceContractAddress] = useState('')
@@ -15,10 +53,13 @@ const AddLottery: React.FC<any> = ({  }) => {
   const [wonkaBarPrice, setWonkaBarPrice] = useState('')
   const [wonkaBarsMaxSuply, setWonkaBarsMaxSuply] = useState('')
 
+  const [approveDone, setApproveDone] = useState(false)
+
+  const [loadingSubmit, setLoadingSubmit] = useState(false)
+
   // const { writeContract } = useWriteContract()
 
-
-
+  // getApproved
 
   const handleCreateLottery = async () => {
     if(!duration) return notification.error(<ErrorCode text='Duration is empty!' />);
@@ -31,37 +72,30 @@ const AddLottery: React.FC<any> = ({  }) => {
     const timestamp = date.getTime() / 1000; 
 
     try {
-    //  await writeContract({ 
-    //     abi: [
-    //       {
-    //         "inputs": [
-    //           { "internalType": "address", "name": "to", "type": "address" },
-    //           { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
-    //         ],
-    //         "name": "approve",
-    //         "outputs": [],
-    //         "stateMutability": "nonpayable",
-    //         "type": "function"
-    //       }
-    //     ],
-    //     address: priceContractAddress,
-    //     functionName: 'approve',
-    //     args: [
-    //       '0xFf7d147cdD63f1c5E9351d97883DB2eb75AA3B8B',
-    //       BigInt(priceTokenId),
-    //     ],
-    //  })
+      setLoadingSubmit(true)
+        // await writeYourContractAsync({
+        //   functionName: "approve",
+        //   args: [
+        //     '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707',
+        //     BigInt(priceTokenId),
+        //   ],
+        // });
+        // setApproveDone(true)
 
-      await writeYourContractAsync({
-        functionName: "createLottery",
-        args: [BigInt(timestamp), priceContractAddress, BigInt(priceTokenId), BigInt(wonkaBarPrice),BigInt(wonkaBarsMaxSuply)],
-      });
+        await writeContractAsync({
+          functionName: "createLottery",
+          args: [BigInt(timestamp), priceContractAddress, BigInt(priceTokenId), BigInt(wonkaBarPrice), BigInt(wonkaBarsMaxSuply)],
+        });
+    
     } catch (e) {
       console.error("Error setting greeting:", e);
+    } finally {
+      setLoadingSubmit(false)
+      setShow(false)
     }
   }
 
-
+  
   return (
     <CustomCard className='border-green-600 p-5'>
         <div className='mt-3'>
@@ -104,9 +138,21 @@ const AddLottery: React.FC<any> = ({  }) => {
           <button 
             className='btn-green w-full'
             onClick={handleCreateLottery}
+            disabled={loadingSubmit}
           >
-            Create Lottery
+            {loadingSubmit ? 'Loading...' : 'Create Lottery'}
           </button>
+
+          {/* {approveDone ? <SendTx 
+            priceContractAddress={priceContractAddress}
+            priceTokenId={priceTokenId} 
+            wonkaBarPrice={wonkaBarPrice} 
+            wonkaBarsMaxSuply={wonkaBarsMaxSuply} 
+            duration={duration}
+            loadingSubmit={loadingSubmit}
+            setLoadingSubmit={setLoadingSubmit}
+            setShow={setShow}
+          /> : null} */}
         </div>
     </CustomCard>
   );

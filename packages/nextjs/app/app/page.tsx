@@ -35,7 +35,7 @@ const Dapp: NextPage = () => {
   return (
     <div className="">
         <ModalContentBox handleShow={{ show, setShow }}>
-            <AddLottery />
+            <AddLottery setShow={setShow} />
         </ModalContentBox>
       <div className="mx-auto max-w-full sm:max-w-screen-sm md:max-w-screen-md lg:max-w-screen-lg xl:max-w-screen-xl">
         <div className="bg-[#763C00] bg-opacity-60 p-2 rounded-full">
