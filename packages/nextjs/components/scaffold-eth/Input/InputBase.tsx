@@ -6,6 +6,7 @@ type InputBaseProps<T> = CommonInputProps<T> & {
   prefix?: ReactNode;
   suffix?: ReactNode;
   reFocus?: boolean;
+  type?: string
 };
 
 export const InputBase = <T extends { toString: () => string } | undefined = string>({
@@ -18,6 +19,7 @@ export const InputBase = <T extends { toString: () => string } | undefined = str
   prefix,
   suffix,
   reFocus,
+  type
 }: InputBaseProps<T>) => {
   const inputReft = useRef<HTMLInputElement>(null);
 
@@ -30,7 +32,7 @@ export const InputBase = <T extends { toString: () => string } | undefined = str
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      onChange(e as unknown as T);
+      onChange(e.target.value as unknown as T);
     },
     [onChange],
   );
@@ -50,6 +52,7 @@ export const InputBase = <T extends { toString: () => string } | undefined = str
     <div className={`flex border-2 border-gray-300  bg-gray-100 rounded-full text-choco ${modifier}`}>
       {prefix}
       <input
+        type={type}
         className="input focus-within:border-transparent focus:outline-none focus:bg-transparent h-[2.2rem] min-h-[2.2rem] px-4 border w-full font-medium placeholder:text-choco text-choco focus:text-choco bg-gray-100 border-gray-500 "
         placeholder={placeholder}
         name={name}

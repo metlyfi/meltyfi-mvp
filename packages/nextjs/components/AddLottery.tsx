@@ -1,34 +1,34 @@
 // AddLottery.tsx
 import React, { ReactNode, useState } from 'react';
 import CustomCard from './Card';
-import { InputBase } from './scaffold-eth';
+import { AddressInput, EtherInput, InputBase, IntegerInput } from './scaffold-eth';
 import { useScaffoldWriteContract } from '~~/hooks/scaffold-eth';
 import { parseEther } from 'viem';
+import { notification } from '~~/utils/scaffold-eth';
 
 const AddLottery: React.FC<any> = ({  }) => {
   const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("MeltyFiNFT");
 
-  const [formValue, setFormValue] = useState({
-    duration: '',
-    priceContractAddress: '',
-    priceTokenId: '',
-    wonkaBarPrice: '',
-    wonkaBarsMaxSuply: ''
-  })
-
-  console.log('value', formValue)
+  const [duration, setDuration] = useState('')
+  const [priceContractAddress, setPriceContractAddress] = useState('')
+  const [priceTokenId, setPriceTokenId] = useState('')
+  const [wonkaBarPrice, setWonkaBarPrice] = useState('')
+  const [wonkaBarsMaxSuply, setWonkaBarsMaxSuply] = useState('')
 
 
-  const handleChange = (e: any) => {
-    const { name, value } = e.target
-    setFormValue({...formValue, [name]: value})
-  }
+  console.log('duration', duration, priceContractAddress, priceTokenId, wonkaBarPrice, wonkaBarsMaxSuply)
+
+  
 
   const handleCreateLottery = async () => {
+
+    if(!duration) return notification.error(<ErrorCode text='Duration is empty!' />);
+
+
     try {
       await writeYourContractAsync({
         functionName: "createLottery",
-        args: [parseEther(formValue.duration), formValue.priceContractAddress, parseEther(formValue.priceTokenId), parseEther(formValue.wonkaBarPrice), parseEther(formValue.wonkaBarsMaxSuply)],
+        args: [duration, priceContractAddress, priceTokenId, wonkaBarPrice, wonkaBarsMaxSuply],
       });
     } catch (e) {
       console.error("Error setting greeting:", e);
@@ -41,41 +41,37 @@ const AddLottery: React.FC<any> = ({  }) => {
         <div className='mt-3'>
           <InputBase
             placeholder='Duration'
-            name='duration'
-            value={formValue.duration}
-            onChange={handleChange}
+            type='date'
+            value={duration}
+            onChange={setDuration}
           />
         </div>
         <div className='mt-3'>
-          <InputBase 
+          <AddressInput 
             placeholder='NFT Address'
-            name='priceContractAddress'
-            value={formValue.priceContractAddress}
-            onChange={handleChange}
+            value={priceContractAddress}
+            onChange={setPriceContractAddress}
           />
         </div>
         <div className='mt-3'>
-          <InputBase 
+          <IntegerInput 
             placeholder='NFT ID'
-            name='priceTokenId'
-            value={formValue.priceTokenId}
-            onChange={handleChange}
+            value={priceTokenId}
+            onChange={setPriceTokenId}
           />
         </div>
         <div className='mt-3'>
-          <InputBase
+          <EtherInput 
             placeholder='Ticket Price' 
-            name='wonkaBarPrice'
-            value={formValue.wonkaBarPrice}
-            onChange={handleChange}
+            value={wonkaBarPrice}
+            onChange={setWonkaBarPrice}
           />
         </div>
         <div className='mt-3'>
-          <InputBase
+          <IntegerInput 
             placeholder='Tickets Quantity' 
-            name='wonkaBarsMaxSuply'
-            value={formValue.wonkaBarsMaxSuply}
-            onChange={handleChange}
+            value={wonkaBarsMaxSuply}
+            onChange={setWonkaBarsMaxSuply}
           />
         </div>
         <div className='mt-2'>
@@ -91,3 +87,14 @@ const AddLottery: React.FC<any> = ({  }) => {
 };
 
 export default AddLottery;
+
+
+const ErrorCode = ({ text }: any) => {
+  return (
+    <>
+      <p className="font-bold mt-0 mb-1">
+        <code className="italic bg-base-300 text-base font-bold"></code>{text}
+      </p>
+    </>,
+  )
+}
