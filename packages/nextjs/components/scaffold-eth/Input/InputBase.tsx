@@ -30,7 +30,7 @@ export const InputBase = <T extends { toString: () => string } | undefined = str
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      onChange(e.target.value as unknown as T);
+      onChange(e as unknown as T);
     },
     [onChange],
   );
@@ -47,10 +47,10 @@ export const InputBase = <T extends { toString: () => string } | undefined = str
   }, [reFocus]);
 
   return (
-    <div className={`flex border-2 border-base-300 bg-base-200 rounded-full text-accent ${modifier}`}>
+    <div className={`flex border-2 border-gray-300  bg-gray-100 rounded-full text-choco ${modifier}`}>
       {prefix}
       <input
-        className="input input-ghost focus-within:border-transparent focus:outline-none focus:bg-transparent h-[2.2rem] min-h-[2.2rem] px-4 border w-full font-medium placeholder:text-accent/70 text-base-content/70 focus:text-base-content/70"
+        className="input focus-within:border-transparent focus:outline-none focus:bg-transparent h-[2.2rem] min-h-[2.2rem] px-4 border w-full font-medium placeholder:text-choco text-choco focus:text-choco bg-gray-100 border-gray-500 "
         placeholder={placeholder}
         name={name}
         value={value?.toString()}
