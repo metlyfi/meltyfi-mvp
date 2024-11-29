@@ -13,39 +13,53 @@ const SendTx: React.FC<any> = ({
   const { data: deployedContractData } = useDeployedContractInfo(contractName);
   const { writeContractAsync, isPending } = useScaffoldWriteContract(contractName);
   console.log('->DeployedContractData', deployedContractData);
+
+  const [isRunning, setIsRunning] = useState(false)
   
     const date = new Date(duration);
     const timestamp = date.getTime() / 1000; 
 
     const makeTx = async () => {
       console.log('->Make Tx', {isPending})
+      setIsRunning(true)
       
       try {
         await writeContractAsync({
           functionName: "createLottery",
           args: [BigInt(timestamp), priceContractAddress, BigInt(priceTokenId), BigInt(wonkaBarPrice),BigInt(wonkaBarsMaxSuply)],
         });
+        setLoadingSubmit(false)
+        setShow(false)
+        // refresh page
+        window.location.reload()
+    
       } catch (error) {
         console.log('->Error', error);
       }
     }
 
     useEffect(() => {
-      if(deployedContractData) makeTx()
-    }, [deployedContractData])
+      if(deployedContractData && !isRunning) makeTx()
+        console.log({deployedContractData, writeContractAsync, isPending});
+        
+    }, [deployedContractData, writeContractAsync, isPending])
 
-    useEffect(() => {
-      if(isPending) return
-      setLoadingSubmit(false)
-      setShow(false)
-    }, [isPending])
+    // useEffect(() => {
+    //   if(isPending) return
+    //   // setLoadingSubmit(false)
+    //   // setShow(false)
+    // }, [isPending])
     
 
-  return (<></>)
+  return (<>Allowance Made!</>)
 }
 
 const AddLottery: React.FC<any> = ({ setShow }) => {
-  const { writeContractAsync, isPending } = useScaffoldWriteContract("MeltyFiNFT");
+  // const { writeContractAsync, isPending } = useScaffoldWriteContract("MeltyFiNFT");
+  const { data: deployedContractData } = useDeployedContractInfo("MeltyFiNFT");
+  console.log('deployedContractData', deployedContractData);
+  
+  const { writeContractAsync, isPending } = useScaffoldWriteContract("TestCollection");
 
   const [duration, setDuration] = useState('')
   const [priceContractAddress, setPriceContractAddress] = useState('')
@@ -73,25 +87,25 @@ const AddLottery: React.FC<any> = ({ setShow }) => {
 
     try {
       setLoadingSubmit(true)
-        // await writeYourContractAsync({
-        //   functionName: "approve",
-        //   args: [
-        //     '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707',
-        //     BigInt(priceTokenId),
-        //   ],
-        // });
-        // setApproveDone(true)
-
         await writeContractAsync({
-          functionName: "createLottery",
-          args: [BigInt(timestamp), priceContractAddress, BigInt(priceTokenId), BigInt(wonkaBarPrice), BigInt(wonkaBarsMaxSuply)],
+          functionName: "approve",
+          args: [
+            deployedContractData?.address,
+            BigInt(priceTokenId),
+          ],
         });
+        setApproveDone(true)
+
+        // await writeContractAsync({
+        //   functionName: "createLottery",
+        //   args: [BigInt(timestamp), priceContractAddress, BigInt(priceTokenId), BigInt(wonkaBarPrice), BigInt(wonkaBarsMaxSuply)],
+        // });
     
     } catch (e) {
       console.error("Error setting greeting:", e);
     } finally {
-      setLoadingSubmit(false)
-      setShow(false)
+      // setLoadingSubmit(false)
+      // setShow(false)
     }
   }
 
@@ -143,7 +157,7 @@ const AddLottery: React.FC<any> = ({ setShow }) => {
             {loadingSubmit ? 'Loading...' : 'Create Lottery'}
           </button>
 
-          {/* {approveDone ? <SendTx 
+          {approveDone ? <SendTx 
             priceContractAddress={priceContractAddress}
             priceTokenId={priceTokenId} 
             wonkaBarPrice={wonkaBarPrice} 
@@ -152,7 +166,7 @@ const AddLottery: React.FC<any> = ({ setShow }) => {
             loadingSubmit={loadingSubmit}
             setLoadingSubmit={setLoadingSubmit}
             setShow={setShow}
-          /> : null} */}
+          /> : null}
         </div>
     </CustomCard>
   );
