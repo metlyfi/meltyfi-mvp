@@ -9,7 +9,7 @@ export const metadata = getMetadata({ title: "MeltyFi Web3 Protocol", descriptio
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning>
-      <body>
+      <body style={{backgroundImage: 'url(/bg.png)'}}>
         <ThemeProvider enableSystem>
           <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
         </ThemeProvider>
