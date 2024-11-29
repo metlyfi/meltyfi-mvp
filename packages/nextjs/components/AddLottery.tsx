@@ -2,9 +2,13 @@
 import React, { ReactNode, useState } from 'react';
 import CustomCard from './Card';
 import { InputBase } from './scaffold-eth';
+import { useScaffoldWriteContract } from '~~/hooks/scaffold-eth';
+import { parseEther } from 'viem';
 
 const AddLottery: React.FC<any> = ({  }) => {
-  const [value, setValue] = useState({
+  const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("MeltyFiNFT");
+
+  const [formValue, setFormValue] = useState({
     duration: '',
     priceContractAddress: '',
     priceTokenId: '',
@@ -12,9 +16,23 @@ const AddLottery: React.FC<any> = ({  }) => {
     wonkaBarsMaxSuply: ''
   })
 
+  console.log('value', formValue)
+
+
   const handleChange = (e: any) => {
     const { name, value } = e.target
-    setValue({...value, [name]: value})
+    setFormValue({...formValue, [name]: value})
+  }
+
+  const handleCreateLottery = async () => {
+    try {
+      await writeYourContractAsync({
+        functionName: "createLottery",
+        args: [parseEther(formValue.duration), formValue.priceContractAddress, parseEther(formValue.priceTokenId), parseEther(formValue.wonkaBarPrice), parseEther(formValue.wonkaBarsMaxSuply)],
+      });
+    } catch (e) {
+      console.error("Error setting greeting:", e);
+    }
   }
 
 
@@ -24,7 +42,7 @@ const AddLottery: React.FC<any> = ({  }) => {
           <InputBase
             placeholder='Duration'
             name='duration'
-            value={value.duration}
+            value={formValue.duration}
             onChange={handleChange}
           />
         </div>
@@ -32,7 +50,7 @@ const AddLottery: React.FC<any> = ({  }) => {
           <InputBase 
             placeholder='NFT Address'
             name='priceContractAddress'
-            value={value.priceContractAddress}
+            value={formValue.priceContractAddress}
             onChange={handleChange}
           />
         </div>
@@ -40,7 +58,7 @@ const AddLottery: React.FC<any> = ({  }) => {
           <InputBase 
             placeholder='NFT ID'
             name='priceTokenId'
-            value={value.priceTokenId}
+            value={formValue.priceTokenId}
             onChange={handleChange}
           />
         </div>
@@ -48,7 +66,7 @@ const AddLottery: React.FC<any> = ({  }) => {
           <InputBase
             placeholder='Ticket Price' 
             name='wonkaBarPrice'
-            value={value.wonkaBarPrice}
+            value={formValue.wonkaBarPrice}
             onChange={handleChange}
           />
         </div>
@@ -56,12 +74,15 @@ const AddLottery: React.FC<any> = ({  }) => {
           <InputBase
             placeholder='Tickets Quantity' 
             name='wonkaBarsMaxSuply'
-            value={value.wonkaBarsMaxSuply}
+            value={formValue.wonkaBarsMaxSuply}
             onChange={handleChange}
           />
         </div>
         <div className='mt-2'>
-          <button className='btn-green w-full'>
+          <button 
+            className='btn-green w-full'
+            onClick={handleCreateLottery}
+          >
             Create Lottery
           </button>
         </div>
