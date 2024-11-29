@@ -45,7 +45,7 @@ const SendTx: React.FC<any> = ({
 }
 
 const AddLottery: React.FC<any> = ({ setShow }) => {
-  const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("TestCollection");
+  const { writeContractAsync, isPending } = useScaffoldWriteContract("MeltyFiNFT");
 
   const [duration, setDuration] = useState('')
   const [priceContractAddress, setPriceContractAddress] = useState('')
@@ -73,22 +73,29 @@ const AddLottery: React.FC<any> = ({ setShow }) => {
 
     try {
       setLoadingSubmit(true)
-        await writeYourContractAsync({
-          functionName: "approve",
-          args: [
-            '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707',
-            BigInt(priceTokenId),
-          ],
+        // await writeYourContractAsync({
+        //   functionName: "approve",
+        //   args: [
+        //     '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707',
+        //     BigInt(priceTokenId),
+        //   ],
+        // });
+        // setApproveDone(true)
+
+        await writeContractAsync({
+          functionName: "createLottery",
+          args: [BigInt(timestamp), priceContractAddress, BigInt(priceTokenId), BigInt(wonkaBarPrice), BigInt(wonkaBarsMaxSuply)],
         });
-        setApproveDone(true)
     
     } catch (e) {
       console.error("Error setting greeting:", e);
     } finally {
       setLoadingSubmit(false)
+      setShow(false)
     }
   }
 
+  
   return (
     <CustomCard className='border-green-600 p-5'>
         <div className='mt-3'>
@@ -136,7 +143,7 @@ const AddLottery: React.FC<any> = ({ setShow }) => {
             {loadingSubmit ? 'Loading...' : 'Create Lottery'}
           </button>
 
-          {approveDone ? <SendTx 
+          {/* {approveDone ? <SendTx 
             priceContractAddress={priceContractAddress}
             priceTokenId={priceTokenId} 
             wonkaBarPrice={wonkaBarPrice} 
@@ -145,7 +152,7 @@ const AddLottery: React.FC<any> = ({ setShow }) => {
             loadingSubmit={loadingSubmit}
             setLoadingSubmit={setLoadingSubmit}
             setShow={setShow}
-          /> : null}
+          /> : null} */}
         </div>
     </CustomCard>
   );
