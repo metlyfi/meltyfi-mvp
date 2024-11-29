@@ -12,8 +12,8 @@ export type ScaffoldConfig = {
 
   // chains.hardhat
   // chains.rootstockTestnet
-  // const chain = chains.rootstockTestnet // chains[process.env.NETWORK_NAME as keyof typeof chains]  || chains.hardhat;
-  const chain = chains.hardhat
+  const chain = chains.rootstockTestnet // chains[process.env.NETWORK_NAME as keyof typeof chains]  || chains.hardhat;
+  // const chain = chains.hardhat
   // console.log("chain", chain);
 
   // const chain = chains.rootstockTestnet;
