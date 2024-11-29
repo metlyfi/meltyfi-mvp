@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,36 +27,44 @@ export const menuLinks: HeaderMenuLink[] = [
   },
 ];
 
-export const HeaderMenuLinks = () => {
-  const pathname = usePathname();
-
-  return (
-    <>
-      {menuLinks.map(({ label, href, icon }) => {
-        const isActive = pathname === href;
-        return (
-          <li key={href}>
-            <Link
-              href={href}
-              passHref
-              className={`${
-                isActive ? "bg-secondary shadow-md" : ""
-              } hover:bg-secondary hover:shadow-md focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-sm rounded-full gap-2 grid grid-flow-col`}
-            >
-              {icon}
-              <span>{label}</span>
-            </Link>
-          </li>
-        );
-      })}
-    </>
-  );
-};
+// export const HeaderMenuLinks = () => {
+  
+//   return (
+//     <>
+//       {menuLinks.map(({ label, href, icon }) => {
+//         const isActive = pathname === href;
+//         return (
+//           <li key={href}>
+//             <Link
+//               href={href}
+//               passHref
+//               className={`${
+//                 isActive ? "bg-secondary shadow-md" : ""
+//               } hover:bg-secondary hover:shadow-md focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-sm rounded-full gap-2 grid grid-flow-col`}
+//             >
+//               {icon}
+//               <span>{label}</span>
+//             </Link>
+//           </li>
+//         );
+//       })}
+//     </>
+//   );
+// };
 
 /**
  * Site header
  */
 export const Header = () => {
+  // get router pathname
+  const pathname = usePathname();
+  
+  useEffect(() => {
+    console.log({pathname});
+  }, [pathname]);
+  
+
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const burgerMenuRef = useRef<HTMLDivElement>(null);
   useOutsideClick(
@@ -67,7 +75,10 @@ export const Header = () => {
   return (
     <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 flex-shrink-0 justify-between z-20 px-0 sm:px-2 bg-transparent">
       <div className="navbar-start w-auto lg:w-1/2">
-        <div className="lg:hidden dropdown" ref={burgerMenuRef}>
+      <div className="lg:hidden ">
+      <Image alt="MeltyFi logo" className="cursor-pointer" src="/favicon.png" width={60} height={60} />
+      </div>
+        {/* <div className="lg:hidden dropdown" ref={burgerMenuRef}>
           <label
             tabIndex={0}
             className={`ml-1 btn btn-ghost ${isDrawerOpen ? "hover:bg-secondary" : "hover:bg-transparent"}`}
@@ -88,7 +99,7 @@ export const Header = () => {
               <HeaderMenuLinks />
             </ul>
           )}
-        </div>
+        </div> */}
         <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
           <div className="flex relative w-60 h-20 mt-5">
             <Image alt="MeltyFi logo" className="cursor-pointer" fill src="/logo.png" />
@@ -99,14 +110,25 @@ export const Header = () => {
           </div> */}
         </Link>
       </div>
-      <div className="navbar-center w-auto">
+      {/* <div className="navbar-center w-auto">
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
           <HeaderMenuLinks />
         </ul>
-      </div>
+      </div> */}
       <div className="navbar-end flex-grow mr-4">
-        <RainbowKitCustomConnectButton />
-        <FaucetButton />
+        {pathname === "/" 
+          ? <>
+          {/* border size 5px */}
+            <Link href={'/app'} className="btn-green"> 
+              Go To App
+            </Link>
+          </>
+          : <>
+            <RainbowKitCustomConnectButton />
+            <FaucetButton />
+          </>
+
+        }
       </div>
     </div>
   );
