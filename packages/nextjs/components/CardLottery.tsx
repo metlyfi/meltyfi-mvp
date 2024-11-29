@@ -3,11 +3,11 @@
 import React, { ReactNode } from 'react';
 import CustomCard from './Card';
 import Image from 'next/image';
-import { useScaffoldReadContract } from '~~/hooks/scaffold-eth';
+import { useScaffoldReadContract, useScaffoldWriteContract } from '~~/hooks/scaffold-eth';
 import Loading from './Loading';
 import { bigintToDate } from '~~/utils/utils';
 import { Address } from './scaffold-eth';
-import { parseUnits, formatEther } from 'viem';
+import { parseUnits, formatEther, parseEther } from 'viem';
 import { useAccount } from 'wagmi';
 
 interface CardLotteryProps {
@@ -16,6 +16,8 @@ interface CardLotteryProps {
 
 const CardLottery: React.FC<CardLotteryProps> = ({ lotteryId }) => {
   const { address: connectedAddress } = useAccount();
+
+  const { writeContractAsync, isPending } = useScaffoldWriteContract("MeltyFiNFT");
 
   const { data: lottery, isLoading: isLotteryLoading } = useScaffoldReadContract({
     contractName: "MeltyFiNFT",
@@ -43,6 +45,36 @@ const CardLottery: React.FC<CardLotteryProps> = ({ lotteryId }) => {
       return Math.min(percentage, 100);
     }
   }
+
+  const getImageUrl = (id: bigint): string => {
+    const imageNumber = Number(id % BigInt(8)); 
+    const formattedNumber = (imageNumber + 1).toString().padStart(2, '0'); 
+    return `/chocolate/${formattedNumber}.png`;
+  }
+  
+  
+  const handleBuy = async (e: any) => {
+    e.preventDefault();
+    console.log('->Buy');
+
+    try {
+      await writeContractAsync(
+        {
+          functionName: "buyWonkaBars",
+          args: [BigInt(lotteryId), BigInt(1)],
+          value: lottery?.wonkaBarPrice,
+        },
+        {
+          onBlockConfirmation: (txnReceipt: any) => {
+            console.log("📦 Transaction blockHash", txnReceipt.blockHash);
+          },
+        },
+      );
+    } catch (e) {
+      console.error("Error setting greeting", e);
+    }
+
+  }
   
   return (
     <CustomCard className='p-0'>
@@ -51,7 +83,7 @@ const CardLottery: React.FC<CardLotteryProps> = ({ lotteryId }) => {
       </div> : <>
         <div className="flex items-center space-x-4 text-choco px-3">
             <Image
-              src={'/chocolate/01.png'}
+              src={getImageUrl(lottery?.id || BigInt(0))}
               alt={'title'}
               width={200}
               height={200}
@@ -110,8 +142,8 @@ const CardLottery: React.FC<CardLotteryProps> = ({ lotteryId }) => {
                 </>
                 : <>
                 
-                {lottery?.state === 0 && <button className='btn-green text-3xl'>
-                  Buy <div className='text-sm'>Wonka Bar</div>
+                {lottery?.state === 0 && <button className='btn-green text-3xl' onClick={handleBuy} disabled={isPending}>
+                  {isPending ? 'Signing Tx...' : <>Buy <div className='text-sm'>Wonka Bar</div></>}
                 </button>}
 
                 {(lottery?.state === 1 || lottery?.state === 2) && <button className='btn-green text-3xl'>
