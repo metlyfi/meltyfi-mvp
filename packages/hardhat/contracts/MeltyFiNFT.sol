@@ -550,12 +550,6 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply {
             "MeltyFi: The maximum number of Wonka Bars for sale is lower than the lower bound"
         );
 
-        // approve the prize transfer
-        prizeContract.approve(
-            address(this),
-            prizeTokenId
-        );
-
         /// transfer the prize to this contract
         prizeContract.safeTransferFrom(
             _msgSender(),
