@@ -2,9 +2,52 @@
 import React, { ReactNode, use, useEffect, useState } from 'react';
 import CustomCard from './Card';
 import { AddressInput, EtherInput, InputBase, IntegerInput } from './scaffold-eth';
-import { useDeployedContractInfo, useScaffoldWriteContract } from '~~/hooks/scaffold-eth';
+import { useDeployedContractInfo, useScaffoldWriteContract, useTargetNetwork, useTransactor, useWatchBalance } from '~~/hooks/scaffold-eth';
 import { notification } from '~~/utils/scaffold-eth';
 // import { useAccount, useWriteContract } from 'wagmi';
+import { useWriteContract } from 'wagmi';
+import { SelectNFT } from './SelectNFT';
+
+
+const approveNFT = async (wagmiContractWrite: any, writeTx: any, { contractAddress, approveTo, tokenId }: any) => {
+  const nftAbi = [
+    {
+      inputs: [
+        { internalType: 'address', name: 'to', type: 'address' },
+        { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+      ],
+      name: 'approve',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+      ],
+      name: 'getApproved',
+      outputs: [{ internalType: 'address', name: '', type: 'address' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+  ];
+  try {
+    // Altrimenti, procedi con l'approvazione
+    const makeWriteWithParams = () =>
+      wagmiContractWrite.writeContractAsync({
+        abi: nftAbi,
+        address: contractAddress,
+        functionName: 'approve',
+        args: [approveTo, tokenId],
+      });
+
+    const writeTxResult = await writeTx(makeWriteWithParams);
+    return writeTxResult;
+  } catch (error) {
+    console.error('Error during approval:', error);
+    throw error;
+  }
+};
 
 const SendTx: React.FC<any> = ({
   priceContractAddress, priceTokenId, wonkaBarPrice, wonkaBarsMaxSuply, duration, loadingSubmit, setLoadingSubmit, setShow
@@ -12,15 +55,14 @@ const SendTx: React.FC<any> = ({
   const contractName = "MeltyFiNFT";
   const { data: deployedContractData } = useDeployedContractInfo(contractName);
   const { writeContractAsync, isPending } = useScaffoldWriteContract(contractName);
-  console.log('->DeployedContractData', deployedContractData);
-
+  // console.log('->DeployedContractData', deployedContractData);
   const [isRunning, setIsRunning] = useState(false)
   
     const date = new Date(duration);
     const timestamp = date.getTime() / 1000; 
 
     const makeTx = async () => {
-      console.log('->Make Tx', {isPending})
+      // console.log('->Make Tx', {isPending})
       setIsRunning(true)
       
       try {
@@ -40,7 +82,7 @@ const SendTx: React.FC<any> = ({
 
     useEffect(() => {
       if(deployedContractData && !isRunning) makeTx()
-        console.log({deployedContractData, writeContractAsync, isPending});
+        // console.log({deployedContractData, writeContractAsync, isPending});
         
     }, [deployedContractData, writeContractAsync, isPending])
 
@@ -57,13 +99,19 @@ const SendTx: React.FC<any> = ({
 const AddLottery: React.FC<any> = ({ setShow }) => {
   // const { writeContractAsync, isPending } = useScaffoldWriteContract("MeltyFiNFT");
   const { data: deployedContractData } = useDeployedContractInfo("MeltyFiNFT");
-  console.log('deployedContractData', deployedContractData);
+  // console.log('deployedContractData', deployedContractData);
   
-  const { writeContractAsync, isPending } = useScaffoldWriteContract("TestCollection");
+  // const { writeContractAsync, isPending } = useScaffoldWriteContract("TestCollection");
+  const writeTx = useTransactor()
+  const wagmiContractWrite = useWriteContract();
 
   const [duration, setDuration] = useState('')
-  const [priceContractAddress, setPriceContractAddress] = useState('')
-  const [priceTokenId, setPriceTokenId] = useState('')
+  const [nftData, setNftData] = useState({
+    addressNFT: '',
+    nftID: ''
+  })
+  // const [priceContractAddress, setPriceContractAddress] = useState('')
+  // const [priceTokenId, setPriceTokenId] = useState('')
   const [wonkaBarPrice, setWonkaBarPrice] = useState('')
   const [wonkaBarsMaxSuply, setWonkaBarsMaxSuply] = useState('')
 
@@ -73,27 +121,31 @@ const AddLottery: React.FC<any> = ({ setShow }) => {
 
   // const { writeContract } = useWriteContract()
 
-  // getApproved
-
   const handleCreateLottery = async () => {
     if(!duration) return notification.error(<ErrorCode text='Duration is empty!' />);
-    if(!priceContractAddress) return notification.error(<ErrorCode text='Contract Address is empty!' />);
-    if(!priceTokenId) return notification.error(<ErrorCode text='NFT ID is empty!' />);
+    if(!nftData.addressNFT) return notification.error(<ErrorCode text='Contract Address is empty!' />);
+    if(!nftData.nftID) return notification.error(<ErrorCode text='NFT ID is empty!' />);
+    // if(!priceContractAddress) return notification.error(<ErrorCode text='Contract Address is empty!' />);
+    // if(!priceTokenId) return notification.error(<ErrorCode text='NFT ID is empty!' />);
     if(!wonkaBarPrice) return notification.error(<ErrorCode text='Ticker Price is empty!' />);
     if(!wonkaBarsMaxSuply) return notification.error(<ErrorCode text='Tickers Qumtity is empty!' />);
 
-    const date = new Date(duration);
-    const timestamp = date.getTime() / 1000; 
-
     try {
       setLoadingSubmit(true)
-        await writeContractAsync({
-          functionName: "approve",
-          args: [
-            deployedContractData?.address,
-            BigInt(priceTokenId),
-          ],
-        });
+      const option = {
+        contractAddress: nftData.addressNFT, 
+        approveTo: deployedContractData?.address, 
+        tokenId: nftData.nftID
+      }
+      await approveNFT(wagmiContractWrite, writeTx, option)
+
+        // await writeContractAsync({
+        //   functionName: "approve",
+        //   args: [
+        //     deployedContractData?.address,
+        //     BigInt(priceTokenId),
+        //   ],
+        // });
         setApproveDone(true)
 
         // await writeContractAsync({
@@ -104,7 +156,7 @@ const AddLottery: React.FC<any> = ({ setShow }) => {
     } catch (e) {
       console.error("Error setting greeting:", e);
     } finally {
-      // setLoadingSubmit(false)
+      setLoadingSubmit(false)
       // setShow(false)
     }
   }
@@ -121,6 +173,12 @@ const AddLottery: React.FC<any> = ({ setShow }) => {
           />
         </div>
         <div className='mt-3'>
+          <SelectNFT 
+            nftData={nftData}
+            setNftData={setNftData}
+          />
+        </div>
+        {/* <div className='mt-3'>
           <AddressInput 
             placeholder='NFT Address'
             value={priceContractAddress}
@@ -133,7 +191,7 @@ const AddLottery: React.FC<any> = ({ setShow }) => {
             value={priceTokenId}
             onChange={setPriceTokenId}
           />
-        </div>
+        </div> */}
         <div className='mt-3'>
           <EtherInput 
             placeholder='Ticket Price' 
@@ -158,8 +216,8 @@ const AddLottery: React.FC<any> = ({ setShow }) => {
           </button>
 
           {approveDone ? <SendTx 
-            priceContractAddress={priceContractAddress}
-            priceTokenId={priceTokenId} 
+            priceContractAddress={nftData.addressNFT}
+            priceTokenId={nftData.nftID} 
             wonkaBarPrice={wonkaBarPrice} 
             wonkaBarsMaxSuply={wonkaBarsMaxSuply} 
             duration={duration}
@@ -182,3 +240,5 @@ const ErrorCode = ({ text }: any) => {
       </p>
   )
 }
+
+
