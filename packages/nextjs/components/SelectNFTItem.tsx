@@ -2,12 +2,42 @@
 
 import Image from "next/image";
 import { hexToNum, shortAdrs } from "~~/utils/utils";
+import { useReadContract } from "wagmi";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth";
+
 
 export const SelectNFTItem: React.FC<any> = ({ item, onClick }) => {
-
-    // TODO: Add method to take image for the NFT token    
-
+  const { targetNetwork } = useTargetNetwork();  
+  const abi = [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "tokenURI",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ];
+  const { data, isLoading } = useReadContract({
+    chainId: targetNetwork.id,
+    functionName: 'tokenURI',
+    address: item?.contractAddress,
+    abi,
+    args: [ BigInt(hexToNum(item.tokenId)) ],
+  })
   
+  console.log('readContractHookRes', data, isLoading)
 
   return (
     <li  className={"mt-2 hover:bg-gray-400 p-1"}
