@@ -1,5 +1,5 @@
 // AddLottery.tsx
-import React, { ReactNode, use, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import CustomCard from './Card';
 import { AddressInput, EtherInput, InputBase, IntegerInput } from './scaffold-eth';
 import { useDeployedContractInfo, useScaffoldWriteContract, useTargetNetwork, useTransactor, useWatchBalance } from '~~/hooks/scaffold-eth';

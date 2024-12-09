@@ -21,4 +21,45 @@ export const bigintToDate = (bigintValue: bigint): string => {
       hour12: false, // Imposta l'ora in formato 24 ore
     });
   };
+
+  
+
+  export const getErrorMessage = (error: any) => {
+    // console.log('❌❌❌ getErrorMessage', error)
+    
+    if (error && (typeof error === 'string' || error instanceof String)) {
+        return error
+    } else if (error?.response?.data?.error?.message) {
+        return error.response.data.error.message
+    } else if (error?.response?.data?.error?.detail) {
+        return error.response.data.error.detail
+    } else if (error?.response?.data?.error) {
+        return error.response.data.error
+    } else if (error?.response?.data?.message) {
+        return error.response.data.message
+    } else if (error?.request?.statusText) {
+        return error.request.statusText
+    } else if (error?.request?.status) {
+        return error.request.status
+    } else if (error?.message) {
+        return error.message
+    } else {
+        return "Server error"
+    }
+  }
+
+export const shortAdrs = (address: string): string => {
+    if (!address || address.length < 8) {
+      throw new Error("Invalid Ethereum address");
+    }
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+  };
+  
+export const hexToNum = (hex: string): number => {
+    if (!hex || typeof hex !== 'string') {
+      throw new Error("Invalid hex value");
+    }
+  
+    return parseInt(hex, 16);
+  };
   
